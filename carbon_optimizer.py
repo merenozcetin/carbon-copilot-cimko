@@ -40,6 +40,9 @@ class CarbonParameters:
     # TR-ETS free allocation phase-down schedule (realistic assumption)
     tr_ets_free_allocation_schedule: Dict[int, float] = None
     
+    # Freight ETS phase-in schedule (actual implementation)
+    freight_ets_phase_in_schedule: Dict[int, float] = None
+    
     escalators: Dict[str, float] = None
     
     def __post_init__(self):
@@ -62,13 +65,20 @@ class CarbonParameters:
                 2033: 0.860,   # 86%
                 2034: 1.000    # 100%
             }
+        
+        if self.freight_ets_phase_in_schedule is None:
+            self.freight_ets_phase_in_schedule = {
+                2024: 0.40,    # 40% (actual implementation)
+                2025: 0.70,    # 70% (actual implementation)
+                # 100% from 2026 onwards (default 1.0)
+            }
 
 class CarbonOptimizer:
     """Main carbon cost optimization engine"""
     
     def __init__(self, params: CarbonParameters):
         self.params = params
-        self.years = list(range(2025, 2035))
+        self.years = list(range(2024, 2035))
         self.results = {}
         
     def calculate_co2_emissions(self, year: int) -> Dict[str, float]:
@@ -221,21 +231,36 @@ class CarbonOptimizer:
             'tr_ets_net_emissions_t': net_emissions
         }
     
+    def calculate_freight_phase_in_factor(self, year: int) -> float:
+        """Calculate freight ETS phase-in factor (actual implementation)"""
+        if year < 2024:
+            return 0.0  # No freight ETS before 2024
+        elif year >= 2026:
+            return 1.0  # Full freight ETS from 2026 onwards
+        else:
+            # Use actual phase-in schedule
+            return self.params.freight_ets_phase_in_schedule.get(year, 1.0)
+    
     def calculate_freight_cost(self, year: int) -> Dict[str, float]:
-        """Calculate freight ETS pass-through costs (USD)"""
-        if year < 2026:
-            return {'freight_cost_usd': 0.0}
+        """Calculate freight ETS pass-through costs with actual phase-in schedule (USD)"""
+        if year < 2024:
+            return {'freight_cost_usd': 0.0, 'freight_phase_in_factor': 0.0}
+        
+        # Calculate phase-in factor
+        phase_in_factor = self.calculate_freight_phase_in_factor(year)
         
         # Get escalated freight cost
         freight_cost_per_t_usd = self.get_escalated_price(
             self.params.freight_ets_pass_through_usd_2026, 'freight_ets_pass_through_usd', 2026, year
         )
         
-        freight_cost_usd = self.params.eu_export_volume * freight_cost_per_t_usd
+        # Apply phase-in factor
+        freight_cost_usd = self.params.eu_export_volume * freight_cost_per_t_usd * phase_in_factor
         
         return {
             'freight_cost_usd': freight_cost_usd,
-            'freight_cost_per_t_usd': freight_cost_per_t_usd
+            'freight_cost_per_t_usd': freight_cost_per_t_usd,
+            'freight_phase_in_factor': phase_in_factor
         }
     
     def calculate_annual_costs(self, year: int) -> Dict[str, Any]:
@@ -277,6 +302,7 @@ class CarbonOptimizer:
                 'TR_ETS_Cost_USD': annual_result['tr_ets']['tr_ets_cost_usd'],
                 'TR_ETS_Free_Alloc_t': annual_result['tr_ets'].get('tr_ets_free_allocation_t', 0.0),
                 'Freight_Cost_USD': annual_result['freight']['freight_cost_usd'],
+                'Freight_Phase_In_Factor': annual_result['freight'].get('freight_phase_in_factor', 0.0),
                 'Total_Cost_USD': annual_result['total_cost_usd'],
                 'Cost_per_Tonne_USD': annual_result['cost_per_tonne_usd']
             })
@@ -389,12 +415,12 @@ def main():
     results = optimizer.run_optimization()
     
     # Display results
-    print("\n=== 2025-2034 Carbon Cost Projections (USD) ===")
+    print("\n=== 2024-2034 Carbon Cost Projections (USD) ===")
     print(results.round(2))
     
     # Summary statistics
     print(f"\n=== Summary ===")
-    print(f"Total 10-year carbon cost: ${results['Total_Cost_USD'].sum():,.0f}")
+    print(f"Total 11-year carbon cost: ${results['Total_Cost_USD'].sum():,.0f}")
     print(f"Average annual cost: ${results['Total_Cost_USD'].mean():,.0f}")
     print(f"Peak annual cost: ${results['Total_Cost_USD'].max():,.0f} (Year {results.loc[results['Total_Cost_USD'].idxmax(), 'Year']})")
     print(f"Average cost per tonne: ${results['Cost_per_Tonne_USD'].mean():.2f}")

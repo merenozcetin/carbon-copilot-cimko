@@ -114,7 +114,7 @@ def main():
             Azalt: Carbon Risk Co Pilot - Batıçim
         </h1>
         <p style="color: #7f8c8d; font-size: 1.1rem; margin: 0.5rem 0 0 0; font-weight: 400;">
-            Enterprise-grade carbon cost modeling for 2025-2034
+            Enterprise-grade carbon cost modeling for 2024-2034
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -265,9 +265,9 @@ def main():
     
     with col1:
         st.metric(
-            "Total 10-Year Cost",
+            "Total 11-Year Cost",
             f"${results['Total_Cost_USD'].sum():,.0f}",
-            help="Total carbon-related costs 2025-2034"
+            help="Total carbon-related costs 2024-2034"
         )
     
     with col2:
@@ -331,7 +331,7 @@ def main():
     
     fig_breakdown.update_layout(
         title=dict(
-            text="Carbon Cost Evolution 2025-2034",
+            text="Carbon Cost Evolution 2024-2034",
             font=dict(size=20, family="Arial, sans-serif", color="#2c3e50"),
             x=0.5
         ),
@@ -456,6 +456,7 @@ def main():
     display_results['Total_CO2_t'] = display_results['Total_CO2_t'].apply(lambda x: f"{x:,.0f}")
     display_results['CBAM_Phase_In_Factor'] = display_results['CBAM_Phase_In_Factor'].apply(lambda x: f"{x:.1%}")
     display_results['TR_ETS_Free_Alloc_t'] = display_results['TR_ETS_Free_Alloc_t'].apply(lambda x: f"{x:,.0f}")
+    display_results['Freight_Phase_In_Factor'] = display_results['Freight_Phase_In_Factor'].apply(lambda x: f"{x:.1%}")
     
     st.dataframe(display_results, use_container_width=True, height=400)
     
@@ -481,6 +482,38 @@ def main():
             file_name="sensitivity_analysis.csv",
             mime="text/csv"
         )
+    
+    # Assumptions section
+    st.markdown('<div class="subheader">KEY ASSUMPTIONS</div>', unsafe_allow_html=True)
+    
+    assumptions_text = """
+    **CARBON PRICING ASSUMPTIONS:**
+    • CBAM certificate prices follow EU ETS trajectory with 5-7% annual growth
+    • TR-ETS prices start at $9/tCO2 in 2026 with gradual convergence toward EU prices
+    • Freight ETS started in 2024 at 40%, increased to 70% in 2025, full implementation from 2026
+    
+    **PRODUCTION ASSUMPTIONS:**
+    • Plant capacity utilization remains constant at current levels
+    • Clinker-to-cement ratio reflects current production mix
+    • EU export volumes maintain current market penetration
+    
+    **EMISSIONS ASSUMPTIONS:**
+    • Process emissions based on limestone calcination stoichiometry
+    • Thermal energy requirements reflect current kiln efficiency
+    • Electricity grid carbon intensity follows national energy transition plans
+    
+    **REGULATORY ASSUMPTIONS:**
+    • CBAM implementation follows EU timeline (2026 full implementation)
+    • TR-ETS free allocation declines 2.2% annually from 2026
+    • EU benchmark values remain constant at Phase 4 levels
+    
+    **FINANCIAL ASSUMPTIONS:**
+    • USD exchange rates remain stable relative to EUR and TRY
+    • No additional carbon taxes or levies beyond modeled systems
+    • Transportation costs exclude potential modal shift impacts
+    """
+    
+    st.markdown(assumptions_text)
     
     # Footer
     st.markdown("---")
