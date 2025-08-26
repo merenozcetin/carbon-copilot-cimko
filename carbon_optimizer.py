@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Batıçim Cement — 2025-2034 Carbon-Cost Optimizer (v0)
+Çimko Cement — 2025-2034 Carbon-Cost Optimizer (v0)
 Decision-support tool for minimizing carbon-related cash-out (USD only)
 """
 
@@ -14,16 +14,16 @@ import seaborn as sns
 
 @dataclass
 class CarbonParameters:
-    """Core carbon cost parameters (all USD) - Updated with Batıçim actuals"""
-    plant_capacity_tpa: float = 1_759_584  # Actual Batıçim capacity
-    co2_process_intensity: float = 904  # kg CO2/t clinker (2024 actual)
-    clinker_ratio: float = 0.80  # 80% clinker in cement
+    """Core carbon cost parameters (all USD) - Updated with Çimko actuals"""
+    plant_capacity_tpa: float = 9_400_000  # Actual Çimko capacity
+    co2_process_intensity: float = 812 # kg CO2/t clinker (2024 target)
+    clinker_ratio: float = 0.87  # 87% clinker in cement
     thermal_energy_MJ: float = 3_830  # MJ/t clinker (actual)
-    alt_fuel_share: float = 0.0  # Currently 0% alternative fuels
-    renewable_el_share: float = 0.30  # 30% renewable electricity
+    alt_fuel_share: float = 0.25  # 2024 target - 25% alternative fuels
+    renewable_el_share: float = 0.19  # 19% renewable electricity
     grid_emission_factor: float = 0.442  # kg CO2e/kWh (Turkey grid)
     electricity_use_kWh: float = 77.64  # kWh/t cement (actual)
-    eu_export_volume: float = 650_000  # t/yr actual exports
+    eu_export_volume: float = 800_000  # t/yr estimated exports
     cbam_price_usd_2026: float = 90  # USD/t CO2 (escalates 5%/yr)
     tr_ets_price_usd_2026: float = 9  # USD/t CO2 (starts 2026, escalates 5%/yr)
     freight_ets_pass_through_usd_2026: float = 1.00  # USD/t cement (escalates 3%/yr)
@@ -357,7 +357,7 @@ class CarbonOptimizer:
 
 def get_user_inputs() -> CarbonParameters:
     """Collect user inputs with fallback to synthetic data"""
-    print("=== Batıçim Cement Carbon-Cost Optimizer ===")
+    print("=== Çimko Cement Carbon-Cost Optimizer ===")
     print("Please provide actual plant data (press Enter to use synthetic defaults):\n")
     
     # Plant capacity
@@ -404,7 +404,7 @@ def get_user_inputs() -> CarbonParameters:
 def main():
     """Main execution function"""
     # Use synthetic data for testing
-    print("=== Batıçim Cement Carbon-Cost Optimizer ===")
+    print("=== Çimko Cement Carbon-Cost Optimizer ===")
     print("Running with synthetic data for testing...\n")
     
     params = CarbonParameters()
